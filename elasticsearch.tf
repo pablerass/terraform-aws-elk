@@ -1,7 +1,7 @@
 resource "aws_instance" "elk_elasticsearch_master" {
   count = "${var.elasticsearch_master_count}"
 
-  ami           = "${data.aws_ami.ubuntu.id}"
+  ami           = "${var.ami}"
   instance_type = "${var.elasticsearch_master_instance_type}"
   key_name      = "${var.key_pair}"
   subnet_id     = "${var.subnet_id}"
@@ -12,13 +12,13 @@ resource "aws_instance" "elk_elasticsearch_master" {
     ignore_changes = ["ami"]
   }
 
-  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-master-", count.index + 1), map("Role", "elasticsearch-master"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-master-", count.index + 1), map("Role", "elasticsearch-master"))}"
 }
 
 resource "aws_instance" "elk_elasticsearch_data" {
   count = "${var.elasticsearch_data_count}"
 
-  ami           = "${data.aws_ami.ubuntu.id}"
+  ami           = "${var.ami}"
   instance_type = "${var.elasticsearch_data_instance_type}"
   key_name      = "${var.key_pair}"
   subnet_id     = "${var.subnet_id}"
@@ -29,7 +29,7 @@ resource "aws_instance" "elk_elasticsearch_data" {
     ignore_changes = ["ami"]
   }
 
-  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-data-", count.index + 1), map("Role", "elasticsearch-data"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-data-", count.index + 1), map("Role", "elasticsearch-data"))}"
 }
 
 resource "aws_ebs_volume" "elk_elasticsearch_lib" {
@@ -62,7 +62,7 @@ resource "aws_volume_attachment" "elk_elasticsearch_lib" {
 
 resource "aws_security_group" "elk_elasticsearch" {
   name        = "${var.name}_elasticsearch"
-  description = "ELK ElasticSearch instances"
+  description = "ELK (${var.name}) ElasticSearch instances"
   vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {

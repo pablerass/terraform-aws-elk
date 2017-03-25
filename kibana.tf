@@ -1,25 +1,24 @@
 resource "aws_instance" "elk_kibana" {
   count = "${var.kibana_count}"
 
-  ami           = "${data.aws_ami.ubuntu.id}"
+  ami           = "${var.ami}"
   instance_type = "${var.kibana_instance_type}"
   key_name      = "${var.key_pair}"
   subnet_id     = "${var.subnet_id}"
 
-  vpc_security_group_ids = ["${aws_security_group.elk_kibana.id}",
-    "${aws_security_group.elk_elasticsearch.id}",
+  vpc_security_group_ids = ["${aws_security_group.elk_kibana.id}", "${aws_security_group.elk_elasticsearch.id}",
   ]
 
   lifecycle {
     ignore_changes = ["ami"]
   }
 
-  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-kibana-", count.index + 1), map("Role", "kibana"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-kibana-", count.index + 1), map("Role", "kibana"))}"
 }
 
 resource "aws_security_group" "elk_kibana" {
   name        = "${var.name}-kibana"
-  description = "ELK Kibana instances"
+  description = "ELK (${var.name}) Kibana instances"
   vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {

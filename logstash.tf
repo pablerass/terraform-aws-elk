@@ -1,7 +1,7 @@
 resource "aws_instance" "elk_logstash" {
   count = "${var.logstash_count}"
 
-  ami                    = "${data.aws_ami.ubuntu.id}"
+  ami                    = "${var.ami}"
   instance_type          = "${var.kibana_instance_type}"
   key_name               = "${var.key_pair}"
   subnet_id              = "${var.subnet_id}"
@@ -11,12 +11,12 @@ resource "aws_instance" "elk_logstash" {
     ignore_changes = ["ami"]
   }
 
-  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-logstash-", count.index + 1), map("Role", "logstash"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-logstash-", count.index + 1), map("Role", "logstash"))}"
 }
 
 resource "aws_security_group" "elk_logstash" {
   name        = "${var.name}-logstash"
-  description = "ELK Logstash instances"
+  description = "ELK (${var.name}) Logstash instances"
   vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {
@@ -46,7 +46,7 @@ resource "aws_security_group" "elk_logstash" {
 
 resource "aws_security_group" "elk_beat" {
   name = "${var.name}-beat"
-  description = "ELK Beat instances"
+  description = "ELK (${var.name}) Beat instances"
   vpc_id      = "${data.aws_vpc.selected.id}"
 
   tags = "${merge(var.tags, map("Module", var.module))}"

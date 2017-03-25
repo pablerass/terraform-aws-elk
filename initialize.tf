@@ -2,6 +2,8 @@ variable "key_pair" {}
 
 variable "subnet_id" {}
 
+variable "ami" {}
+
 variable "logstash_instance_type" {}
 
 variable "kibana_instance_type" {}
