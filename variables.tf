@@ -34,6 +34,11 @@ variable "tags" {
   default     = {}
 }
 
+variable "tags_instances" {
+  description = "Instance tags"
+  default     = {}
+}
+
 variable "admin_cidrs" {
   description = "Adminitration CIDRs for remote access"
   default     = []

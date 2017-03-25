@@ -12,7 +12,7 @@ resource "aws_instance" "elk_elasticsearch_master" {
     ignore_changes = ["ami"]
   }
 
-  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-master-", count.index + 1), map("Role", "elasticsearch-master"))}"
+  tags = "${merge(var.tags, var.tags_instances, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-master-", count.index + 1), map("Role", "elasticsearch-master"))}"
 }
 
 resource "aws_instance" "elk_elasticsearch_data" {
@@ -44,7 +44,7 @@ resource "aws_ebs_volume" "elk_elasticsearch_lib" {
     ignore_changes = ["availability_zone"]
   }
 
-  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-lib-", count.index + 1), map("MountPoint", "/var/lib/elasticsearch")}"
+  tags = "${merge(var.tags, var.tags_instances, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-lib-", count.index + 1), map("MountPoint", "/var/lib/elasticsearch")}"
 }
 
 resource "aws_volume_attachment" "elk_elasticsearch_lib" {

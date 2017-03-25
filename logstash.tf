@@ -11,7 +11,7 @@ resource "aws_instance" "elk_logstash" {
     ignore_changes = ["ami"]
   }
 
-  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-logstash-", count.index + 1), map("Role", "logstash"))}"
+  tags = "${merge(var.tags, var.tags_instances, map("Module", var.module), map("Name", concat(var.name, "-logstash-", count.index + 1), map("Role", "logstash"))}"
 }
 
 resource "aws_security_group" "elk_logstash" {
