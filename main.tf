@@ -1,3 +1,11 @@
+data "aws_subnet" "selected" {
+  id = "${var.subnet_id}"
+}
+
+data "aws_vpc" "selected" {
+  id = "${data.aws_subnet.selected.vpc_id}"
+}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -23,13 +31,11 @@ variable "ubuntu_user" {
 }
 
 resource "aws_security_group" "elk_admin" {
-  name = "elk_admin"
+  name = "${var.name}-admin"
 
   description = "ELK instances administration"
 
-  vpc_id = "${var.vpc_id}"
+  vpc_id = "${data.aws_vpc.selected.id}"
 
-  tags {
-    Module = "${var.module}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module))}"
 }

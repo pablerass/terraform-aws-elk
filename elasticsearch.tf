@@ -12,13 +12,7 @@ resource "aws_instance" "elk_elasticsearch_master" {
     ignore_changes = ["ami"]
   }
 
-  tags {
-    Name                     = "elk-elasticsearch-master-${count.index + 1}"
-    Module                   = "${var.module}"
-    AnsibleRole              = "elasticsearch-master"
-    AnsibleUser              = "${var.ubuntu_user}"
-    AnsiblePythonInterpreter = "${var.ubuntu_python_bin}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-master-", count.index + 1), map("Role", "elasticsearch-master"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
 }
 
 resource "aws_instance" "elk_elasticsearch_data" {
@@ -35,13 +29,7 @@ resource "aws_instance" "elk_elasticsearch_data" {
     ignore_changes = ["ami"]
   }
 
-  tags {
-    Name                     = "elk-elasticsearch-data-${count.index + 1}"
-    Module                   = "${var.module}"
-    AnsibleRole              = "elasticsearch-data"
-    AnsibleUser              = "${var.ubuntu_user}"
-    AnsiblePythonInterpreter = "${var.ubuntu_python_bin}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-data-", count.index + 1), map("Role", "elasticsearch-data"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
 }
 
 resource "aws_ebs_volume" "elk_elasticsearch_lib" {
@@ -56,10 +44,7 @@ resource "aws_ebs_volume" "elk_elasticsearch_lib" {
     ignore_changes = ["availability_zone"]
   }
 
-  tags {
-    Name       = "elk-elasticsearch-${count.index + 1}-lib"
-    MountPoint = "/var/lib/elasticsearch"
-  }
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-lib-", count.index + 1), map("MountPoint", "/var/lib/elasticsearch")}"
 }
 
 resource "aws_volume_attachment" "elk_elasticsearch_lib" {
@@ -76,9 +61,9 @@ resource "aws_volume_attachment" "elk_elasticsearch_lib" {
 }
 
 resource "aws_security_group" "elk_elasticsearch" {
-  name        = "elk_elasticsearch"
+  name        = "${var.name}_elasticsearch"
   description = "ELK ElasticSearch instances"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {
     from_port   = 0
@@ -106,11 +91,9 @@ resource "aws_security_group" "elk_elasticsearch" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = ["${aws_security_group.elk_admin.id}"]
+    security_groups = "${concat(list(aws_security_group.elk_admin.id), var.admin_sg_ids)}"
     cidr_blocks     = "${var.admin_cidrs}"
   }
 
-  tags {
-    Module = "${var.module}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module))}"
 }

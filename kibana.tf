@@ -14,19 +14,13 @@ resource "aws_instance" "elk_kibana" {
     ignore_changes = ["ami"]
   }
 
-  tags {
-    Name                     = "elk-kibana-${count.index + 1}"
-    Module                   = "${var.module}"
-    AnsibleRole              = "kibana"
-    AnsibleUser              = "${var.ubuntu_user}"
-    AnsiblePythonInterpreter = "${var.ubuntu_python_bin}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-kibana-", count.index + 1), map("Role", "kibana"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
 }
 
 resource "aws_security_group" "elk_kibana" {
-  name        = "elk_kibana"
+  name        = "${var.name}-kibana"
   description = "ELK Kibana instances"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {
     from_port   = 0
@@ -46,11 +40,9 @@ resource "aws_security_group" "elk_kibana" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = ["${aws_security_group.elk_admin.id}"]
+    security_groups = "${concat(list(aws_security_group.elk_admin.id), var.admin_sg_ids)}"
     cidr_blocks     = "${var.admin_cidrs}"
   }
 
-  tags {
-    Module = "${var.module}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module))}"
 }

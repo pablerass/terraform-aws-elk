@@ -24,7 +24,22 @@ variable "logstash_count" {
   default     = 1
 }
 
+variable "name" {
+  description = "ELK stack name"
+  default     = "elk"
+}
+
+variable "tags" {
+  description = "Resources tags"
+  default     = {}
+}
+
 variable "admin_cidrs" {
   description = "Adminitration CIDRs for remote access"
+  default     = []
+}
+
+variable "admin_sg_ids" {
+  description = "Adminitration Security Group ids for remote access"
   default     = []
 }

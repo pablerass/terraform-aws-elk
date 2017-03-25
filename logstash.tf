@@ -11,18 +11,13 @@ resource "aws_instance" "elk_logstash" {
     ignore_changes = ["ami"]
   }
 
-  tags {
-    Name                     = "elk-logstash-${count.index + 1}"
-    AnsibleRole              = "logstash"
-    AnsibleUser              = "${var.ubuntu_user}"
-    AnsiblePythonInterpreter = "${var.ubuntu_python_bin}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module), map("Name", concat(var.name, "-logstash-", count.index + 1), map("Role", "logstash"), map("AnsibleUser", var.ubuntu_user), map("AnsiblePythonInterpreter", var.ubuntu_python_bin))}"
 }
 
 resource "aws_security_group" "elk_logstash" {
-  name        = "elk_logstash"
+  name        = "${var.name}-logstash"
   description = "ELK Logstash instances"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {
     from_port   = 0
@@ -42,23 +37,17 @@ resource "aws_security_group" "elk_logstash" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = ["${aws_security_group.elk_admin.id}"]
+    security_groups = "${concat(list(aws_security_group.elk_admin.id), var.admin_sg_ids)}"
     cidr_blocks     = "${var.admin_cidrs}"
   }
 
-  tags {
-    Module = "${var.module}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module))}"
 }
 
 resource "aws_security_group" "elk_beat" {
-  name = "elk_beat"
-
+  name = "${var.name}-beat"
   description = "ELK Beat instances"
+  vpc_id      = "${data.aws_vpc.selected.id}"
 
-  vpc_id = "${var.vpc_id}"
-
-  tags {
-    Module = "${var.module}"
-  }
+  tags = "${merge(var.tags, map("Module", var.module))}"
 }
