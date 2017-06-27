@@ -34,7 +34,7 @@ variable "tags" {
   default     = {}
 }
 
-variable "tags_instances" {
+variable "instance_tags" {
   description = "Instance tags"
   default     = {}
 }

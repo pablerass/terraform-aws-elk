@@ -4,7 +4,7 @@ resource "aws_instance" "elk_elasticsearch_master" {
   ami           = "${var.ami}"
   instance_type = "${var.elasticsearch_master_instance_type}"
   key_name      = "${var.key_pair}"
-  subnet_id     = "${var.subnet_id}"
+  subnet_id     = "${element(var.subnet_ids, count.index % length(var.subnet_ids))}"
 
   vpc_security_group_ids = ["${aws_security_group.elk_elasticsearch.id}"]
 
@@ -21,7 +21,7 @@ resource "aws_instance" "elk_elasticsearch_data" {
   ami           = "${var.ami}"
   instance_type = "${var.elasticsearch_data_instance_type}"
   key_name      = "${var.key_pair}"
-  subnet_id     = "${var.subnet_id}"
+  subnet_id     = "${element(var.subnet_ids, count.index % length(var.subnet_ids))}"
 
   vpc_security_group_ids = ["${aws_security_group.elk_elasticsearch.id}"]
 
@@ -44,7 +44,7 @@ resource "aws_ebs_volume" "elk_elasticsearch_lib" {
     ignore_changes = ["availability_zone"]
   }
 
-  tags = "${merge(var.tags, var.tags_instances, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-lib-", count.index + 1), map("MountPoint", "/var/lib/elasticsearch")}"
+  tags = "${merge(var.tags, var.instance_tags, map("Module", var.module), map("Name", concat(var.name, "-elasticsearch-lib-", count.index + 1), map("MountPoint", "/var/lib/elasticsearch")}"
 }
 
 resource "aws_volume_attachment" "elk_elasticsearch_lib" {
@@ -62,7 +62,7 @@ resource "aws_volume_attachment" "elk_elasticsearch_lib" {
 
 resource "aws_security_group" "elk_elasticsearch" {
   name        = "${var.name}_elasticsearch"
-  description = "ELK (${var.name}) ElasticSearch instances"
+  description = "ELK ${var.name} ElasticSearch instances"
   vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {

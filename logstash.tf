@@ -4,19 +4,19 @@ resource "aws_instance" "elk_logstash" {
   ami                    = "${var.ami}"
   instance_type          = "${var.kibana_instance_type}"
   key_name               = "${var.key_pair}"
-  subnet_id              = "${var.subnet_id}"
+  subnet_id              = "${element(var.subnet_ids, count.index % length(var.subnet_ids))}"
   vpc_security_group_ids = ["${aws_security_group.elk_logstash.id}"]
 
   lifecycle {
     ignore_changes = ["ami"]
   }
 
-  tags = "${merge(var.tags, var.tags_instances, map("Module", var.module), map("Name", concat(var.name, "-logstash-", count.index + 1), map("Role", "logstash"))}"
+  tags = "${merge(var.tags, var.instance_tags, map("Module", var.module), map("Name", concat(var.name, "-logstash-", count.index + 1), map("Role", "logstash"))}"
 }
 
 resource "aws_security_group" "elk_logstash" {
   name        = "${var.name}-logstash"
-  description = "ELK (${var.name}) Logstash instances"
+  description = "ELK ${var.name} Logstash instances"
   vpc_id      = "${data.aws_vpc.selected.id}"
 
   egress {
